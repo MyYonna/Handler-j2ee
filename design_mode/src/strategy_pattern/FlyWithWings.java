@@ -1,0 +1,12 @@
+package strategy_pattern;
+
+public class FlyWithWings implements FlyBehavior {
+
+	@Override
+	public void fly() {
+		// TODO Auto-generated method stub
+
+		System.out.println("i fly with wings..");
+	}
+
+}
