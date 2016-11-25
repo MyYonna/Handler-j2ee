@@ -1,6 +1,6 @@
 package observer_pattern;
 /**
- * �۲��߽ӿ�
+ * 观察者接口
  * @author zhangpeng
  *
  */

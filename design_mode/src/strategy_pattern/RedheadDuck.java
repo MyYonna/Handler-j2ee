@@ -4,7 +4,7 @@ public class RedheadDuck extends Duck {
 
 	public RedheadDuck() {
 		super();
-		//²»ÒªÔÚ¿Í»§ÀàÖĞ°ó¶¨ÊµÏÖÀà£¬ÕâÑù²»ÀûÓÚ½âñî
+		//ä¸è¦åœ¨å®¢æˆ·ç±»ä¸­ç»‘å®šå®ç°ç±»ï¼Œè¿™æ ·ä¸åˆ©äºè§£è€¦
 		//this.fb = fb;
 	}
 

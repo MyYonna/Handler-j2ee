@@ -2,8 +2,8 @@ package strategy_pattern;
 
 public abstract class Duck {
 
-	//ÃæÏò½Ó¿Ú±à³Ì£¬¿ÉÒÔÔÚÔËĞĞÊ±¶¯Ì¬µØ¸Ä±äËüµÄĞĞÎª
-	//¶àÓÃ×éºÏ£¬ÉÙÓÃ¼Ì³Ğ
+	//é¢å‘æ¥å£ç¼–ç¨‹ï¼Œå¯ä»¥åœ¨è¿è¡Œæ—¶åŠ¨æ€åœ°æ”¹å˜å®ƒçš„è¡Œä¸º
+	//å¤šç”¨ç»„åˆï¼Œå°‘ç”¨ç»§æ‰¿
 	FlyBehavior fb;
 		
 	public void swim(){
@@ -19,7 +19,7 @@ public abstract class Duck {
 	public void setFb(FlyBehavior fb) {
 		this.fb = fb;
 	}
-	//ÌáÈ¡³ö±ä»¯µÄ²¿·Ö²¢½øĞĞµ¥¶À·â×°
+	//æå–å‡ºå˜åŒ–çš„éƒ¨åˆ†å¹¶è¿›è¡Œå•ç‹¬å°è£…
 	public abstract void performFly();
 	
 }

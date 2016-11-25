@@ -1,8 +1,8 @@
 package strategy_pattern;
 
 public class Test {
-	//²ßÂÔÄ£Ê½£º¶¨ÒåÁËËã·¨×å£¬·Ö±ğ·â×°ÆğÀ´£¬ÈÃËüÃÇÖ®¼ä¿ÉÒÔÏà»¥Ìæ»»£¬´ËÄ£Ê½ÈÃËã·¨µÄ±ä»¯¶ÀÁ¢ÓÚÊ¹ÓÃËã·¨µÄ¿Í»§
-	//FlyBehavior ¶¨ÒåÁËËã·¨×å£¬Æä×ÓÀà½øĞĞÊµÏÖ²¢¿ÉÒÔÏà»¥Ìæ»»
+	//ç­–ç•¥æ¨¡å¼ï¼šå®šä¹‰äº†ç®—æ³•æ—ï¼Œåˆ†åˆ«å°è£…èµ·æ¥ï¼Œè®©å®ƒä»¬ä¹‹é—´å¯ä»¥ç›¸äº’æ›¿æ¢ï¼Œæ­¤æ¨¡å¼è®©ç®—æ³•çš„å˜åŒ–ç‹¬ç«‹äºä½¿ç”¨ç®—æ³•çš„å®¢æˆ·
+	//FlyBehavior å®šä¹‰äº†ç®—æ³•æ—ï¼Œå…¶å­ç±»è¿›è¡Œå®ç°å¹¶å¯ä»¥ç›¸äº’æ›¿æ¢
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
@@ -12,7 +12,7 @@ public class Test {
 		duck.display();
 		duck.swim();
 		duck.performFly();
-		//¶¯Ì¬µØ¸Ä±äĞĞÎª
+		//åŠ¨æ€åœ°æ”¹å˜è¡Œä¸º
 		fb = new FlyWithNoWings();
 		duck.setFb(fb);
 		duck.performFly();

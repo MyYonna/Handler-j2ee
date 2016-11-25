@@ -2,7 +2,7 @@ package observer_pattern;
 
 import java.util.ArrayList;
 /**
- * Ö÷Ìâ
+ * ä¸»é¢˜
  * @author zhangpeng
  *
  */

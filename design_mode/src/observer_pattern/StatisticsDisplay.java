@@ -1,6 +1,6 @@
 package observer_pattern;
 /**
- * ¹Û²ìÕß
+ * è§‚å¯Ÿè€…
  * @author zhangpeng
  *
  */
