@@ -1,5 +1,9 @@
 package observer_pattern;
-
+/**
+ * π€≤Ï’ﬂ
+ * @author zhangpeng
+ *
+ */
 public class StatisticsDisplay implements DisplayElement, Observer {
 
 	private float temperature;

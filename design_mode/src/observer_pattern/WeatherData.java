@@ -1,7 +1,11 @@
 package observer_pattern;
 
 import java.util.ArrayList;
-
+/**
+ * Ö÷Ìâ
+ * @author zhangpeng
+ *
+ */
 public class WeatherData implements Subject {
 
 	private ArrayList<Observer> observers = new ArrayList<Observer>();
