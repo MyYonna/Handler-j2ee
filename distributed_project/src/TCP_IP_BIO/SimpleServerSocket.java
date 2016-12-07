@@ -1,6 +1,9 @@
 package TCP_IP_BIO;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -12,13 +15,17 @@ import java.util.concurrent.Executors;
  */
 public class SimpleServerSocket {
 
-	public static void createServer(){
+	public static ExecutorService pool = Executors.newFixedThreadPool(10);
+	SimpleServerSocket(){
+		createServer();
+	}
+	
+	public  void createServer(){
 		try {
 			//创建socket服务器
 			ServerSocket ss = new ServerSocket(8888);
 			System.out.println("服务启动。。。");
 			//初始化一个线程池
-			ExecutorService pool = Executors.newFixedThreadPool(10);
 			//循环监听端口
 			while(true){
 				//因为socket为同步阻塞io模式，所以只能当有socket连接建立之后，之后的代码才能往下运行
@@ -33,11 +40,54 @@ public class SimpleServerSocket {
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("响应超时。。。");
 		}
 	}
 	
+	public class SimpleServerThread implements Runnable {
+		private BufferedReader br = null;
+		private PrintWriter pw = null;
+		private String msg = null;
+		
+		public SimpleServerThread(Socket socket) {
+			try {
+				//对PrintWriter设置成自动提交
+				pw = new PrintWriter(socket.getOutputStream(),true);
+				//初始化输入输出流
+				br = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
+				pw.println("服务器收到了你的请求为："+"开始连接");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			try{
+				while( (msg = br.readLine()) != null){
+					if(msg.equals("exit")){
+						System.out.println("客户端退出");
+						if(br != null){
+							br.close();
+						}
+						if(pw != null){
+							pw.close();
+						}
+						pool.shutdownNow();
+					}else{
+						//当客户端读取流的方法使用的是readLine时，服务端的输出流使用的方法应该为println
+						System.out.println("服务器收到了你的请求为："+msg);
+						pw.println("服务器收到了你的请求为："+msg);
+						
+					}
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
 	public static void main(String[] args){
-		 createServer();
+		new SimpleServerSocket();
 	}
 }
