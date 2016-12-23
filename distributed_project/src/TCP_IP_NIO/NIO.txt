@@ -1,0 +1,250 @@
+NIO   同步非阻塞IO模式
+
+java NIO的核心组成部分：Channel  Buffer  Selector
+
+java NIO对Channel的实现
+          FileChannel 从文件中读写数据。
+          DatagramChannel 能通过UDP读写网络中的数据
+          SocketChannel 能通过TCP读写网络中的数据。
+          ServerSocketChannel 可以监听新进来的TCP连接，像Web服务器那样。对每一个新进来的连接都会创建一个SocketChannel。
+          
+java NIO对Buffer的实现
+		  ByteBuffer
+		  CharBuffer
+		  DoubleBuffer
+		  FloatBuffer
+		  IntBuffer
+		  LongBuffer
+		  ShortBuffer
+		  MappedByteBuffer
+
+Selector允许单线程处理多个Channel。
+
+
+Channel类似于流，但有些不同：
+		  
+		    既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。
+		    通道可以异步地读写。
+		    通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。
+    
+Buffer用于和NIO通道进行交互。如你所知，数据是从通道读入缓冲区，从缓冲区写入到通道中的
+ 		
+		    写入数据到Buffer
+		    调用flip()方法
+		    从Buffer中读取数据
+		    调用clear()方法或者compact()方法
+		  	注：  调用clear()或compact()方法。clear()方法会清空整个缓冲区。compact()方法只会清除已经读过的数据。任何未读的数据都被移到缓冲区的起始处，新写入的数据将放到缓冲区未读数据的后面
+ 		
+ 		
+ 		 Buffer的三个属性
+ 		     capacity  Buffer的一个固定的大小值。满了之后必须清空才能写入数据
+ 		     position  (可移动)当你写数据到Buffer中时，position表示当前的位置。 当读取数据时，也是从某个特定位置读。当将Buffer从写模式切换到读模式，position会被重置为0.（操作的位置）
+ 		     limit     在写模式下，Buffer的limit表示你最多能往Buffer里写多少数据。当切换Buffer到读模式时， limit表示你最多能读到多少数据（你能读到之前写入的所有数据）
+ 		     
+ 		     position和limit的含义取决于Buffer处在读模式还是写模式。不管Buffer处在什么模式，capacity的含义总是一样的
+        
+        Buffer的分配
+    	要想获得一个Buffer对象首先要进行分配。每一个Buffer类都有一个allocate方法。指定它的capacity属性。
+    	
+    	向Buffer中写数据
+    	   从Channel写到Buffer  inChannel.read(buf);
+    	 通过Buffer的put方法写入     buf.put(127)
+    	 
+    	 切换读写模式
+    	 flip方法
+    	 
+    	 从Buffer中读取数据
+    	   1、从Buffer读取数据到channel  inchannel.write(buf);
+    	   2、使用get方法   byte aByte = buf.get();
+    	   
+    	 rewind()方法  将Position设回0,可以重新读取Buffer的所有数据。
+		 Clear与Compact    	
+		 
+		 equals()与compareTo()方法
+			 实际上，equals它只比较Buffer中的剩余元素。
+			 当满足下列条件时，表示两个Buffer相等：
+	
+	    	有相同的类型（byte、char、int等）。
+		    Buffer中剩余的byte、char等的个数相等。
+		    Buffer中所有剩余的byte、char等都相同 
+    	 
+		compareTo()方法比较两个Buffer的剩余元素(byte、char等)， 如果满足下列条件，则认为一个Buffer“小于”另一个Buffer：
+		
+		    第一个不相等的元素小于另一个Buffer中对应的元素 。
+		    所有元素都相等，但第一个Buffer比另一个先耗尽(第一个Buffer的元素个数比另一个少)。
+		    	
+ Scatter/Gather
+         	分散（scatter）从Channel中读取是指在读操作时将读取的数据写入多个buffer中。因此，Channel将从Channel中读取的数据“分散（scatter）”到多个Buffer中。
+			聚集（gather）写入Channel是指在写操作时将多个buffer的数据写入同一个Channel，因此，Channel 将多个Buffer中的数据“聚集（gather）”后发送到Channel。
+  			
+  			scatter / gather经常用于需要将传输的数据分开处理的场合，例如传输一个由消息头和消息体组成的消息，你可能会将消息体和消息头分散到不同的buffer中，这样你可以方便的处理消息头和消息体。
+  			ByteBuffer[] bufferArray = { header, body };
+			channel.read(bufferArray);
+  			Scattering Reads在移动下一个buffer前，必须填满当前的buffer，这也意味着它不适用于动态消息
+			
+			ByteBuffer[] bufferArray = { header, body };
+			channel.write(bufferArray);
+  			如果一个buffer的容量为128byte，但是仅仅包含58byte的数据，那么这58byte的数据将被写入到channel中。因此与Scattering Reads相反，Gathering Writes能较好的处理动态消息
+ 
+ 通道之间的数据传输	
+ 			在Java NIO中，如果两个通道中有一个是FileChannel，那你可以直接将数据从一个channel（译者注：channel中文常译作通道）传输到另外一个channel。
+ 
+			 transferFrom() FileChannel的transferFrom方法将数据从源通道传输到FileChannel中
+			 
+			 transferTo()  FileChannel的transferTo方法将数据从FileChannel传输到其他的channel中。
+ 
+ Selector 是Java NIO中能够检测一到多个NIO通道，并能够知晓通道是否为诸如读写事件做好准备的组件.这样，一个单独的线程可以管理多个channel，从而管理多个网络连接。
+ 
+             Selector的创建   Selector selector = Selector.open();
+                                            
+                                            向Selector注册通道  channel.configureBlocking(false);   SelectionKey key = channel.register(Selector,SelectionKey.OP_READ);
+                                            	与Selector一起使用时，Channel必须处于非阻塞模式下。这意味着不能将FileChannel与Selector一起使用，因为FileChannel不能切换到非阻塞模式。而套接字通道都可以。
+ 
+ 			通道触发了一个事件意思是该事件已经就绪。所以，某个channel成功连接到另一个服务器称为“连接就绪”。一个server socket channel准备好接收新进入的连接称为“接收就绪”。一个有数据可读的通道可以说是“读就绪”。等待写数据的通道可以说是“写就绪”。
+ 			如果你对不止一种事件感兴趣，那么可以用“位或”操作符将常量连接起来  int interestSet = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+ 			
+ 			interest集合             interest集合是你所选择的感兴趣的事件集合。可以通过SelectionKey读写interest集合
+ 			int interestSet = selectionKey.interestOps();
+ 			用“位与”操作interest 集合和给定的SelectionKey常量，可以确定某个确定的事件是否在interest 集合中。
+ 			boolean isInterestedInWrite   = interestSet & SelectionKey.OP_WRITE;
+ 			
+ 			ready 集合是通道已经准备就绪的操作的集合。
+   	 		int readySet = selectionKey.readyOps();
+   	 		
+   	 		通过Selector选择通道
+   	 		调用几个重载的select()方法。这些方法返回你所感兴趣的事件（如连接、接受、读或写）已经准备就绪的那些通道
+   	 		
+   	 		select()阻塞到至少有一个通道在你注册的事件上就绪了。
+
+			select(long timeout)和select()一样，除了最长会阻塞timeout毫秒(参数)。
+			
+			selectNow()不会阻塞，不管什么通道就绪都立刻返回（译者注：此方法执行非阻塞的选择操作。如果自从前一次选择操作后，没有通道变成可选择的，则此方法直接返回零。）
+			
+			select()方法返回的int值表示有多少通道已经就绪。亦即，自上次调用select()方法后有多少通道变成就绪状态。
+			如果调用select()方法，因为有一个通道变成就绪状态，返回了1，若再次调用select()方法，如果另一个通道就绪了，它会再次返回1。如果对第一个就绪的channel没有做任何操作，现在就有两个就绪的通道，但在每次select()方法调用之间，只有一个通道就绪了。
+			
+			
+			selectedKeys() 访问“已选择键集（selected key set）”中的就绪通道
+			当像Selector注册Channel时，Channel.register()方法会返回一个SelectionKey 对象。这个对象代表了注册到该Selector的通道。可以通过SelectionKey的selectedKeySet()方法访问这些对象
+			
+			Selector不会自己从已选择键集中移除SelectionKey实例。必须在处理完通道时自己移除
+			
+			wakeUp()
+
+			某个线程调用select()方法后阻塞了，即使没有通道已经就绪，也有办法让其从select()方法返回。只要让其它线程在第一个线程调用select()方法的那个对象上调用Selector.wakeup()方法即可。阻塞在select()方法上的线程会立马返回。
+			
+			如果有其它线程调用了wakeup()方法，但当前没有线程阻塞在select()方法上，下个调用select()方法的线程会立即“醒来（wake up）”。
+			SelectionKey.channel()方法返回的通道需要转型成你要处理的类型，如ServerSocketChannel或SocketChannel等。
+			
+			close()
+
+			用完Selector后调用其close()方法会关闭该Selector，且使注册到该Selector上的所有SelectionKey实例无效。通道本身并不会关闭。
+			
+FileChannel 是一个连接到文件的通道。可以通过文件通道读写文件。并且无法设置成非阻塞模式。
+
+			打开FileChannel
+			在使用FileChannel之前，必须先打开它。但是我们无法直接打开一个FileChannel,需要通过使用一个InputStream、OutputStream或RandomAccessFile来获取一个FileChannel实例。			
+			从FileChannel中读取数据
+			必须是将数据写入Buffer中。  inChannel.read(buf);
+			向FileChannel写入数据
+			必须是通过Buffer向FileChannel写入数据。inChannel.write(buf);
+			关闭FileChannel
+			用完之后必须将其关闭  channel.close();
+			
+			
+			FileChannel的position方法
+			在FileChannel的某个特定位置进行数据的读/写操作。可以通过调用position()方法获取FileChannel的当前位置。
+			通过调用position(long pos)方法设置FileChannel的当前位置。
+			如果将位置设置在文件结束符之后，然后试图从文件通道中读取数据，读方法将返回-1 —— 文件结束标志。
+			如果将位置设置在文件结束符之后，然后向通道中写数据，文件将撑大到当前位置并写入数据。这可能导致“文件空洞”，磁盘上物理文件中写入的数据间有空隙
+			
+			FileChannel的size方法
+			FileChannel实例的size()方法将返回该实例所关联文件的大小
+			
+			FileChannel的truncate方法
+			可以使用FileChannel.truncate()方法截取一个文件。截取文件时，文件将中指定长度后面的部分将被删除
+			
+			FileChannel的force方法
+			FileChannel.force()方法将通道里尚未写入磁盘的数据强制写到磁盘上
+			出于性能方面的考虑，操作系统会将数据缓存在内存中，所以无法保证写入到FileChannel里的数据一定会即时写到磁盘上。要保证这一点，需要调用force()方法。
+			force()方法有一个boolean类型的参数，指明是否同时将文件元数据（权限信息等）写到磁盘上。
+			
+			
+SocketChannel 是一个连接到TCP网络套接字的通道
+			创建它的两种方式：				
+				    打开一个SocketChannel并连接到互联网上的某台服务器。 
+				    一个新连接到达ServerSocketChannel时，会创建一个SocketChannel。
+				    
+		    打开SocketChannel
+		    SocketChannel socketChannel = SocketChannel.open();
+		    socketChannel.connect(new InetSocketAddress("http://jenkov.com", 80));
+		    
+    	   关闭SocketChannel
+    	   socketChannel.close();
+    	   
+    	 从SocketChannel读取数据
+    	 
+    	 写入SocketChannel
+    	 
+    	 设置非阻塞模式
+    	 socketChannel.configureBlocking(false);
+    	 
+    	 connect()
+    	 如果SocketChannel在非阻塞模式下，此时调用connect()，该方法可能在连接建立之前就返回了。为了确定连接是否建立，可以调用finishConnect()的方法
+	    write()
+	  	  非阻塞模式下，write()方法在尚未写出任何内容时可能就返回了。所以需要在循环中调用write()						
+		read()	
+		非阻塞模式下,read()方法在尚未读取到任何数据时可能就返回了。所以需要关注它的int返回值，它会告诉你读取了多少字节。	
+			
+			
+		非阻塞模式与选择器搭配会工作的更好，通过将一或多个SocketChannel注册到Selector，可以询问选择器哪个通道已经准备好了读取，写入等。
+			
+			
+ServerSocketChannel  是一个可以监听新进来的TCP连接的通道
+		打开ServerSocketChannel
+		通过调用 ServerSocketChannel.open() 方法来打开ServerSocketChannel.
+		
+		关闭ServerSocketChannel
+		通过调用ServerSocketChannel.close() 方法来关闭ServerSocketChannel. 
+		
+		监听新进来的连接
+		通过过 ServerSocketChannel.accept() 方法监听新进来的连接。	accept()方法会一直阻塞到有新连接到达。		
+			
+		非阻塞模式
+		ServerSocketChannel可以设置成非阻塞模式。在非阻塞模式下，accept() 方法会立刻返回，如果还没有新进来的连接,返回的将是null。 因此，需要检查返回的SocketChannel是否是null.		
+			
+			
+DatagramChannel 是一个能收发UDP包的通道。因为UDP是无连接的网络协议，所以不能像其它通道那样读取和写入。它发送和接收的是数据包。			
+		打开DatagramChannel
+		DatagramChannel channel = DatagramChannel.open();
+		channel.socket().bind(new InetSocketAddress(9999));
+		
+		接收数据
+		通过receive()方法从DatagramChannel接收数据
+		channel.receive(buf);
+		
+		发送数据
+		通过send()方法从DatagramChannel发送数据，
+		channel.send(buf, new InetSocketAddress("jenkov.com", 80));
+		
+		连接到特定的地址
+		由于UDP是无连接的，连接到特定地址并不会像TCP通道那样创建一个真正的连接。而是锁住DatagramChannel ，让其只能从特定地址收发数据。
+		channel.connect(new InetSocketAddress("jenkov.com", 80));
+			
+Pipe    Java NIO 管道是2个线程之间的单向数据连接	
+		Pipe有一个source通道和一个sink通道。数据会被写到sink通道，从source通道读取
+		
+		创建管道
+		Pipe pipe = Pipe.open();
+		
+		向管道写数据
+		Pipe.SinkChannel sinkChannel = pipe.sink();
+		while(true){
+		sinkChannel.write(buf);
+		}
+		
+		从管道中读取数据		
+			Pipe.SourceChannel sourceChannel = pipe.source();
+			int bytesRead = sourceChannel.read(buf);
+			
+因为NIO是非阻塞的，所以一个单独的线程现在可以管理多个输入和输出通道（channel）
