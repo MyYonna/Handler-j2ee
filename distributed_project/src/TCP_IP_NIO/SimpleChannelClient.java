@@ -27,7 +27,6 @@ public class SimpleChannelClient {
 			while(true){
 				//nKeys大于0，说明有通道准备就绪了
 				nKeys = selector.select();
-				SelectionKey sKey = null;
 				if(nKeys > 0){
 					//获得已经就绪的SelectionKey对象，包含了一些属性
 					Set<SelectionKey> keys = selector.selectedKeys();
@@ -65,11 +64,12 @@ public class SimpleChannelClient {
 							sc.close();
 							fileChannel.close();
 							file.close();
+							selector.selectedKeys().clear();
 						}else if(key.isWritable()){
 							System.out.println("写入服务器的数据...");
 							SocketChannel sc = (SocketChannel)key.channel();
 							ByteBuffer buffer = ByteBuffer.allocate(1024);
-								buffer.put("ddddddddddddddddddddddddddddddddddddssssssssssss".getBytes());
+								buffer.put("这还能不能抢到火车票了".getBytes());
 								buffer.flip();
 								//SocketChannel是非阻塞的，需要循环判断是否写完
 								while( buffer.hasRemaining()){
