@@ -1,13 +1,23 @@
 package TCP_IP_BIO;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 /**
  * 最重要是是理解IO流，以及在关闭IO流的情况下socket也随之关闭，所以想保持socket连接只能flush,不能close
  * @author zhangpeng
@@ -15,15 +25,37 @@ import java.util.concurrent.Executors;
  */
 public class SimpleServerSocket {
 
+	    private static String kpath = "d:\\keytool\\sslsocket.keystore";  
+	   private static String tpath = "d:\\keytool\\sslsocketserver.keystore";  
+	   private static char[] password = "123456".toCharArray(); 
 	public static ExecutorService pool = Executors.newFixedThreadPool(10);
 	SimpleServerSocket(){
 		createServer();
 	}
 	
 	public  void createServer(){
-		try {
 			//创建socket服务器
-			ServerSocket ss = new ServerSocket(8888);
+			boolean flag = true;  
+	        SSLContext context = null;  
+	        try {  
+	            KeyStore ks = KeyStore.getInstance("JKS");  
+	            ks.load(new FileInputStream(kpath), password);  
+	            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");  
+	            kmf.init(ks, password);  
+	            KeyManager[] km = kmf.getKeyManagers();  
+	            KeyStore ts = KeyStore.getInstance("JKS");  
+	            ts.load(new FileInputStream(tpath), password);  
+	            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");  
+	            tmf.init(ts);  
+	            TrustManager[] tm = tmf.getTrustManagers();  
+	            context = SSLContext.getInstance("SSL");  
+	            context.init(km, tm, null);  
+	        } catch (Exception e) {  
+	            e.printStackTrace();   //捕获异常  
+	        }  
+	        SSLServerSocketFactory ssf = (SSLServerSocketFactory) context.getServerSocketFactory();  
+	        try {  
+	            SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket(8000);  
 			System.out.println("服务启动。。。");
 			//初始化一个线程池
 			//循环监听端口
@@ -65,7 +97,8 @@ public class SimpleServerSocket {
 		public void run() {
 			// TODO Auto-generated method stub
 			try{
-				while( (msg = br.readLine()) != null){
+//				while( (msg = br.readLine()) != null){
+				msg = br.readLine();
 					if(msg.equals("exit")){
 						System.out.println("客户端退出");
 						if(br != null){
@@ -81,7 +114,7 @@ public class SimpleServerSocket {
 						pw.println("服务器收到了你的请求为："+msg);
 						
 					}
-				}
+//				}
 			}catch(Exception e){
 				e.printStackTrace();
 			}

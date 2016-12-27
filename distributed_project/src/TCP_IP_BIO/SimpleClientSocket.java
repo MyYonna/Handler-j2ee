@@ -17,7 +17,7 @@ public class SimpleClientSocket {
 	private static ExecutorService exec = Executors.newCachedThreadPool();  
 	SimpleClientSocket(){
 		try {
-			Socket socket = new Socket("127.0.0.1",8888);
+			Socket socket = new Socket("wxsocket.cloudring.net",1883);
 			System.out.println("启动客户端。。。。。服务器连接成功");
 			exec.execute(new ClientHandlerThread(socket)); 
 			//初始化输入输出流
