@@ -26,6 +26,7 @@ public class SimpleChannelServer {
 			//打开一个selector
 			selector = Selector.open();
 			while(true){
+				//无限接收客户端的连接
 				SocketChannel sc = (SocketChannel)serverSocketChannel.accept();
 				if(sc != null){
 					sc.configureBlocking(false);
