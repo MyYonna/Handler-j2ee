@@ -91,7 +91,6 @@ public class SimpleChannelServer {
 					}
 					byteBuffer1.clear();
 					sc.close();
-					Thread.currentThread().stop();
 				}
 			}catch(Exception e){
 				e.printStackTrace();
