@@ -42,7 +42,7 @@ public class SimpleDatagramSocketServer {
 				System.out.println("服务器获取的客户端数据。。。"+msg);
 				String reback = "不错，小伙子";
 				System.out.println("服务器回传开始。。。");
-				int  port  = packet.getPort();
+				int  port  = 8888;
 				InetAddress host = packet.getAddress();
 				DatagramPacket packet1 = new DatagramPacket(reback.getBytes(),0,reback.getBytes().length,host,port);
 				socket.send(packet1);

@@ -13,14 +13,15 @@ public class SimpleDatagramSocketClient {
 	SimpleDatagramSocketClient(){
 		try {
 			Thread t = new Thread(new SimpleDatagramSocketThread());
-			e.execute(t);
+			t.start();
+			//e.execute(t);
 			
 			DatagramSocket socket = new DatagramSocket();
 			Scanner s = new Scanner(System.in);
 			while(s.hasNextLine()){
 				String msg = s.nextLine();
 				if(msg.equals("exit")){
-					break;
+					continue;
 				}else{
 					InetAddress server=Inet4Address.getLocalHost(); 
 					DatagramPacket packet = new DatagramPacket(msg.getBytes(),0,msg.getBytes().length,server,9999);
@@ -50,9 +51,9 @@ public class SimpleDatagramSocketClient {
 			// TODO Auto-generated method stub
 			try{
 				DatagramSocket serverSocket = new DatagramSocket(8888);
+				byte[] buffer = new byte[65507];
+				DatagramPacket receivePacket = new DatagramPacket(buffer,buffer.length);
 				while(true){
-					byte[] buffer = new byte[65507];
-					DatagramPacket receivePacket = new DatagramPacket(buffer,buffer.length);
 					serverSocket.receive(receivePacket);
 					System.out.println(new String(buffer));
 				}
